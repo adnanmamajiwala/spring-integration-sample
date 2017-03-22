@@ -25,8 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Configuration
 public class IntegrationFlowConfiguration {
 
-    private final AtomicInteger hotDrinkCounter = new AtomicInteger();
-    private final AtomicInteger coldDrinkCounter = new AtomicInteger();
+    private final AtomicInteger drinkCounter = new AtomicInteger();
+    private final AtomicInteger dishCounter = new AtomicInteger();
 
     private OrderAggregator orderAggregator;
 
@@ -65,7 +65,7 @@ public class IntegrationFlowConfiguration {
                     public Object handle(Drink drink, Map<String, Object> map) {
                         Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
                         System.out.println(Thread.currentThread().getName()
-                                + " prepared cold drink #" + coldDrinkCounter.incrementAndGet()
+                                + " prepared drink #" + drinkCounter.incrementAndGet()
                                 + " for order #" + drink.getOrderNumber() + ": " + drink.getDrinkName());
                         return drink;
                     }
@@ -85,7 +85,7 @@ public class IntegrationFlowConfiguration {
                     public Object handle(Dish dish, Map<String, Object> map) {
                         Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
                         System.out.println(Thread.currentThread().getName()
-                                + " prepared hot drink #" + hotDrinkCounter.incrementAndGet()
+                                + " prepared dish #" + dishCounter.incrementAndGet()
                                 + " for order #" + dish.getOrderNumber() + ": " + dish.getDishName());
                         return dish;
                     }

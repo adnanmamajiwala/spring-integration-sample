@@ -31,14 +31,12 @@ public class SpringIntegrationSampleApplication {
     private static String generateDrinkName() {
         List<String> drinkName = ImmutableList.of("Black Coffee", "Lemon Tea", "Cappuccino", "Mocha", "Iced Tea", "Pepsi", "Coke", "Mountain Dew", "Vodka", "Whiskey");
         int randomNum = (int) (Math.random() * 9);
-        System.out.println("randomNum : " + randomNum);
         return drinkName.get(randomNum);
     }
 
     private static String generateDishName() {
         List<String> drinkName = ImmutableList.of("Grilled Salmon", "Burger", "Pizza", "Biryani", "Filet Mignon", "Fish and chips", "Chicken tikka masala", "Bruschetta", "Fried eggplant", "Lasagne");
         int randomNum = (int) (Math.random() * 9);
-        System.out.println("randomNum : " + randomNum);
         return drinkName.get(randomNum);
     }
 }

@@ -2,9 +2,6 @@ package com.si.sample.models;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
 public class Delivery {
 
@@ -48,6 +45,9 @@ public class Delivery {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, MULTI_LINE_STYLE);
+        return "---------------------------------------- \n" +
+                "Delivery : order number :" + orderNumber + "\n" +
+                "DishName : " + dishName + "  DrinkName :" + drinkName + "\n" +
+                "---------------------------------------- \n";
     }
 }
