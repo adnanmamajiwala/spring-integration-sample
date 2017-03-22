@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CafeAggregator {
+public class OrderAggregator {
 
     @Aggregator
     public Delivery output(List<Object> objects) {
@@ -36,7 +36,8 @@ public class CafeAggregator {
     }
 
     @CorrelationStrategy
-    public Integer correlation(Object object) {
+    public int correlateBy(Object object) {
+//        System.out.println("Correlation --------->" + ToStringBuilder.reflectionToString(object));
         if (object instanceof Drink) {
             return ((Drink) object).getOrderNumber();
         } else {

@@ -6,7 +6,6 @@ import com.si.sample.models.Drink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.dsl.AggregatorSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -17,36 +16,39 @@ import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.dsl.support.GenericHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.stream.CharacterStreamWritingMessageHandler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@IntegrationComponentScan
 @Configuration
 public class IntegrationFlowConfiguration {
 
     private final AtomicInteger hotDrinkCounter = new AtomicInteger();
     private final AtomicInteger coldDrinkCounter = new AtomicInteger();
 
+    private OrderAggregator orderAggregator;
+
     @Autowired
-    private CafeAggregator cafeAggregator;
+    public IntegrationFlowConfiguration(OrderAggregator orderAggregator) {
+        this.orderAggregator = orderAggregator;
+    }
 
     @Bean(name = PollerMetadata.DEFAULT_POLLER)
     public PollerMetadata poller() {
-        return Pollers.fixedDelay(1000).get();
+        return Pollers.fixedDelay(1).get();
     }
 
     @Bean
     public IntegrationFlow orders() {
-        return IntegrationFlows.from("orders.input")
-                .channel(MessageChannels.executor(Executors.newCachedThreadPool()))
+        return IntegrationFlows
+                .from("orders.input")
                 .routeToRecipients(new Consumer<RecipientListRouterSpec>() {
                     @Override
                     public void accept(RecipientListRouterSpec recipientListRouterSpec) {
-                        recipientListRouterSpec.recipient("drink-flow");
-                        recipientListRouterSpec.recipient("dish-flow");
+                        recipientListRouterSpec.recipient("drink-flow").applySequence(true);
+                        recipientListRouterSpec.recipient("dish-flow").applySequence(true);
                     }
                 })
                 .get();
@@ -55,7 +57,8 @@ public class IntegrationFlowConfiguration {
     @Bean
     public IntegrationFlow drinkFlow() {
         return IntegrationFlows
-                .from(MessageChannels.queue("drink-flow", 10))
+                .from(MessageChannels.executor("drink-flow", executor()))
+                .split("payload.drink")
                 .handle(new GenericHandler<Drink>() {
 
                     @Override
@@ -74,7 +77,8 @@ public class IntegrationFlowConfiguration {
     @Bean
     public IntegrationFlow dishFlow() {
         return IntegrationFlows
-                .from(MessageChannels.queue("dish-flow", 10))
+                .from(MessageChannels.executor("dish-flow", executor()))
+                .split("payload.dish")
                 .handle(new GenericHandler<Dish>() {
 
                     @Override
@@ -85,7 +89,6 @@ public class IntegrationFlowConfiguration {
                                 + " for order #" + dish.getOrderNumber() + ": " + dish.getDishName());
                         return dish;
                     }
-
                 })
                 .channel("output")
                 .get();
@@ -98,13 +101,21 @@ public class IntegrationFlowConfiguration {
                 .aggregate(new Consumer<AggregatorSpec>() {
                     @Override
                     public void accept(AggregatorSpec aggregatorSpec) {
-                        aggregatorSpec.processor(cafeAggregator);
+                        aggregatorSpec.processor(orderAggregator);
                     }
-
                 })
                 .handle(CharacterStreamWritingMessageHandler.stdout())
                 .get();
     }
 
 
+    @Bean
+    public ThreadPoolTaskExecutor executor(){
+        ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
+        pool.setMaxPoolSize(10);
+        pool.setCorePoolSize(10);
+        pool.setWaitForTasksToCompleteOnShutdown(true);
+        pool.setThreadNamePrefix("Order - ");
+        return pool;
+    }
 }
