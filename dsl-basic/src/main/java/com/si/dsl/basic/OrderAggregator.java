@@ -1,8 +1,8 @@
-package com.si.sample;
+package com.si.dsl.basic;
 
-import com.si.sample.models.Delivery;
-import com.si.sample.models.Dish;
-import com.si.sample.models.Drink;
+import com.si.dsl.basic.models.Delivery;
+import com.si.dsl.basic.models.Dish;
+import com.si.dsl.basic.models.Drink;
 
 import org.springframework.integration.annotation.Aggregator;
 import org.springframework.integration.annotation.CorrelationStrategy;

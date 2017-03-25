@@ -1,9 +1,9 @@
-package com.si.sample;
+package com.si.dsl.scattergather;
 
 import com.google.common.collect.ImmutableList;
-import com.si.sample.models.Dish;
-import com.si.sample.models.Drink;
-import com.si.sample.models.Order;
+import com.si.dsl.scattergather.models.Dish;
+import com.si.dsl.scattergather.models.Drink;
+import com.si.dsl.scattergather.models.Order;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;

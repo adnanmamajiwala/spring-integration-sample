@@ -1,6 +1,6 @@
-package com.si.sample;
+package com.si.dsl.basic;
 
-import com.si.sample.models.Order;
+import com.si.dsl.basic.models.Order;
 import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.MessagingGateway;
 

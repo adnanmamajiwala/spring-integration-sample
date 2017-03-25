@@ -1,9 +1,9 @@
-package com.si.sample;
+package com.si.dsl.basic;
 
 import com.google.common.collect.ImmutableList;
-import com.si.sample.models.Dish;
-import com.si.sample.models.Drink;
-import com.si.sample.models.Order;
+import com.si.dsl.basic.models.Dish;
+import com.si.dsl.basic.models.Drink;
+import com.si.dsl.basic.models.Order;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;

@@ -1,4 +1,4 @@
-package com.si.sample.models;
+package com.si.dsl.scattergather.models;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

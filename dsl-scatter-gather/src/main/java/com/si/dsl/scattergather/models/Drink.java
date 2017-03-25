@@ -1,13 +1,20 @@
-package com.si.sample.models;
+package com.si.dsl.scattergather.models;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class Delivery {
+import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
+
+public class Drink {
 
     private int orderNumber;
     private String drinkName;
-    private String dishName;
+
+    public Drink(int orderNumber, String drinkName) {
+        this.orderNumber = orderNumber;
+        this.drinkName = drinkName;
+    }
 
     public int getOrderNumber() {
         return orderNumber;
@@ -25,14 +32,6 @@ public class Delivery {
         this.drinkName = drinkName;
     }
 
-    public String getDishName() {
-        return dishName;
-    }
-
-    public void setDishName(String dishName) {
-        this.dishName = dishName;
-    }
-
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
@@ -45,9 +44,6 @@ public class Delivery {
 
     @Override
     public String toString() {
-        return "---------------------------------------- \n" +
-                "Delivery : order number :" + orderNumber + "\n" +
-                "DishName : " + dishName + "  DrinkName :" + drinkName + "\n" +
-                "---------------------------------------- \n";
+        return ToStringBuilder.reflectionToString(this, MULTI_LINE_STYLE);
     }
 }

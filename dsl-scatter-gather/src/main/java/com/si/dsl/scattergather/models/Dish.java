@@ -1,4 +1,4 @@
-package com.si.sample.models;
+package com.si.dsl.scattergather.models;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -6,14 +6,14 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
-public class Drink {
+public class Dish {
 
     private int orderNumber;
-    private String drinkName;
+    private String dishName;
 
-    public Drink(int orderNumber, String drinkName) {
+    public Dish(int orderNumber, String dishName) {
         this.orderNumber = orderNumber;
-        this.drinkName = drinkName;
+        this.dishName = dishName;
     }
 
     public int getOrderNumber() {
@@ -24,12 +24,12 @@ public class Drink {
         this.orderNumber = orderNumber;
     }
 
-    public String getDrinkName() {
-        return drinkName;
+    public String getDishName() {
+        return dishName;
     }
 
-    public void setDrinkName(String drinkName) {
-        this.drinkName = drinkName;
+    public void setDishName(String dishName) {
+        this.dishName = dishName;
     }
 
     @Override

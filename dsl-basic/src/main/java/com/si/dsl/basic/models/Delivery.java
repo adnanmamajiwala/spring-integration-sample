@@ -1,20 +1,13 @@
-package com.si.sample.models;
+package com.si.dsl.basic.models;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
-
-public class Dish {
+public class Delivery {
 
     private int orderNumber;
+    private String drinkName;
     private String dishName;
-
-    public Dish(int orderNumber, String dishName) {
-        this.orderNumber = orderNumber;
-        this.dishName = dishName;
-    }
 
     public int getOrderNumber() {
         return orderNumber;
@@ -22,6 +15,14 @@ public class Dish {
 
     public void setOrderNumber(int orderNumber) {
         this.orderNumber = orderNumber;
+    }
+
+    public String getDrinkName() {
+        return drinkName;
+    }
+
+    public void setDrinkName(String drinkName) {
+        this.drinkName = drinkName;
     }
 
     public String getDishName() {
@@ -44,6 +45,9 @@ public class Dish {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, MULTI_LINE_STYLE);
+        return "---------------------------------------- \n" +
+                "Delivery : order number :" + orderNumber + "\n" +
+                "DishName : " + dishName + "  DrinkName :" + drinkName + "\n" +
+                "---------------------------------------- \n";
     }
 }

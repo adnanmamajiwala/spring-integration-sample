@@ -1,8 +1,8 @@
-package com.si.sample;
+package com.si.dsl.basic;
 
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.si.sample.models.Dish;
-import com.si.sample.models.Drink;
+import com.si.dsl.basic.models.Dish;
+import com.si.dsl.basic.models.Drink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

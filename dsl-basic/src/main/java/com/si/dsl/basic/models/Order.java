@@ -1,4 +1,4 @@
-package com.si.sample.models;
+package com.si.dsl.basic.models;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -6,14 +6,16 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
-public class Drink {
+public class Order {
 
     private int orderNumber;
-    private String drinkName;
+    private Drink drink;
+    private Dish dish;
 
-    public Drink(int orderNumber, String drinkName) {
+    public Order(int orderNumber, Drink drink, Dish dish) {
         this.orderNumber = orderNumber;
-        this.drinkName = drinkName;
+        this.drink = drink;
+        this.dish = dish;
     }
 
     public int getOrderNumber() {
@@ -24,12 +26,20 @@ public class Drink {
         this.orderNumber = orderNumber;
     }
 
-    public String getDrinkName() {
-        return drinkName;
+    public Drink getDrink() {
+        return drink;
     }
 
-    public void setDrinkName(String drinkName) {
-        this.drinkName = drinkName;
+    public void setDrink(Drink drink) {
+        this.drink = drink;
+    }
+
+    public Dish getDish() {
+        return dish;
+    }
+
+    public void setDish(Dish dish) {
+        this.dish = dish;
     }
 
     @Override
