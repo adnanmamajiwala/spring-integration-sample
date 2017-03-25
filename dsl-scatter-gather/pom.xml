@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.si.sample</groupId>
-	<artifactId>spring-integration-sample</artifactId>
+	<artifactId>dsl-scatter-gather</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>spring-integration-sample</name>
+	<name>dsl-scatter-gather</name>
 	<description>Demo project for Spring Integration</description>
 
 	<parent>

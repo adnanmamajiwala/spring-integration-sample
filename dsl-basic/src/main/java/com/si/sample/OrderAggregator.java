@@ -17,6 +17,7 @@ public class OrderAggregator {
 
     @Aggregator
     public Delivery output(List<Object> objects) {
+        System.out.println("inside Aggregator");
         Delivery delivery = new Delivery();
         for (Object o : objects) {
             if (o instanceof Drink) {
@@ -33,15 +34,20 @@ public class OrderAggregator {
     @CorrelationStrategy
     public int correlateBy(Object object) {
         if (object instanceof Drink) {
-            return ((Drink) object).getOrderNumber();
+            int orderNumber = ((Drink) object).getOrderNumber();
+            System.out.println("inside correlation strategy - instanceOf Drink - order# : " + orderNumber);
+            return orderNumber;
         } else {
-            return ((Dish) object).getOrderNumber();
+            int orderNumber = ((Dish) object).getOrderNumber();
+            System.out.println("inside correlation strategy - instanceOf Dish - order# : " + orderNumber);
+            return orderNumber;
         }
 
     }
 
     @ReleaseStrategy
     public boolean releaseChecker(List<Message<Object>> messages) {
+        System.out.println(" inside release checker - size : " + messages.size());
         return messages.size() == 2;
     }
 

@@ -70,7 +70,7 @@ public class IntegrationFlowConfiguration {
                         return drink;
                     }
                 })
-                .channel("output")
+                .channel("output-flow")
                 .get();
     }
 
@@ -83,25 +83,25 @@ public class IntegrationFlowConfiguration {
 
                     @Override
                     public Object handle(Dish dish, Map<String, Object> map) {
-                        Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
+                        Uninterruptibles.sleepUninterruptibly(3, TimeUnit.SECONDS);
                         System.out.println(Thread.currentThread().getName()
                                 + " prepared dish #" + dishCounter.incrementAndGet()
                                 + " for order #" + dish.getOrderNumber() + ": " + dish.getDishName());
                         return dish;
                     }
                 })
-                .channel("output")
+                .channel("output-flow")
                 .get();
     }
 
     @Bean
     public IntegrationFlow resultFlow() {
         return IntegrationFlows
-                .from("output")
+                .from("output-flow")
                 .aggregate(new Consumer<AggregatorSpec>() {
                     @Override
                     public void accept(AggregatorSpec aggregatorSpec) {
-                        aggregatorSpec.processor(orderAggregator);
+                        aggregatorSpec.processor(orderAggregator, null);
                     }
                 })
                 .handle(CharacterStreamWritingMessageHandler.stdout())
