@@ -1,9 +1,9 @@
 package com.si.dsl.basic;
 
 import com.si.dsl.basic.models.Delivery;
+import com.si.dsl.basic.models.Dessert;
 import com.si.dsl.basic.models.Dish;
 import com.si.dsl.basic.models.Drink;
-
 import org.springframework.integration.annotation.Aggregator;
 import org.springframework.integration.annotation.CorrelationStrategy;
 import org.springframework.integration.annotation.ReleaseStrategy;
@@ -17,14 +17,15 @@ public class OrderAggregator {
 
     @Aggregator
     public Delivery output(List<Object> objects) {
-        System.out.println("inside Aggregator");
         Delivery delivery = new Delivery();
         for (Object o : objects) {
             if (o instanceof Drink) {
-                delivery.setOrderNumber(((Drink) o).getOrderNumber());
                 delivery.setDrinkName(((Drink) o).getDrinkName());
-            } else {
+                delivery.setOrderNumber(((Drink) o).getOrderNumber());
+            } else if (o instanceof Dish){
                 delivery.setDishName(((Dish) o).getDishName());
+            } else {
+                delivery.setDesertName(((Dessert) o).getDessertName());
             }
         }
 
@@ -34,21 +35,18 @@ public class OrderAggregator {
     @CorrelationStrategy
     public int correlateBy(Object object) {
         if (object instanceof Drink) {
-            int orderNumber = ((Drink) object).getOrderNumber();
-            System.out.println("inside correlation strategy - instanceOf Drink - order# : " + orderNumber);
-            return orderNumber;
+            return ((Drink) object).getOrderNumber();
+        } else if (object instanceof Dish) {
+            return ((Dish) object).getOrderNumber();
         } else {
-            int orderNumber = ((Dish) object).getOrderNumber();
-            System.out.println("inside correlation strategy - instanceOf Dish - order# : " + orderNumber);
-            return orderNumber;
+            return ((Dessert) object).getOrderNumber();
         }
 
     }
 
     @ReleaseStrategy
     public boolean releaseChecker(List<Message<Object>> messages) {
-        System.out.println(" inside release checker - size : " + messages.size());
-        return messages.size() == 2;
+        return messages.size() == 3;
     }
 
 }

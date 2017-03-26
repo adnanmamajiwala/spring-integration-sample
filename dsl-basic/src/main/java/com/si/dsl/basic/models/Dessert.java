@@ -6,26 +6,26 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
-public class Drink {
+public class Dessert {
 
     private int orderNumber;
-    private String drinkName;
+    private String dessertName;
 
     public int getOrderNumber() {
         return orderNumber;
     }
 
-    public Drink setOrderNumber(int orderNumber) {
+    public Dessert setOrderNumber(int orderNumber) {
         this.orderNumber = orderNumber;
         return this;
     }
 
-    public String getDrinkName() {
-        return drinkName;
+    public String getDessertName() {
+        return dessertName;
     }
 
-    public Drink setDrinkName(String drinkName) {
-        this.drinkName = drinkName;
+    public Dessert setDessertName(String dessertName) {
+        this.dessertName = dessertName;
         return this;
     }
 

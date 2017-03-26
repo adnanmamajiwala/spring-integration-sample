@@ -5,7 +5,7 @@ import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.MessagingGateway;
 
 @MessagingGateway
-public interface CafeService {
+public interface RestaurantsService {
 
     @Gateway(requestChannel = "orders.input")
     void placeOrder(Order order);

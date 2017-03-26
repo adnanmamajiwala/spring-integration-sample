@@ -11,35 +11,42 @@ public class Order {
     private int orderNumber;
     private Drink drink;
     private Dish dish;
-
-    public Order(int orderNumber, Drink drink, Dish dish) {
-        this.orderNumber = orderNumber;
-        this.drink = drink;
-        this.dish = dish;
-    }
+    private Dessert dessert;
 
     public int getOrderNumber() {
         return orderNumber;
     }
 
-    public void setOrderNumber(int orderNumber) {
+    public Order setOrderNumber(int orderNumber) {
         this.orderNumber = orderNumber;
+        return this;
     }
 
     public Drink getDrink() {
         return drink;
     }
 
-    public void setDrink(Drink drink) {
+    public Order setDrink(Drink drink) {
         this.drink = drink;
+        return this;
     }
 
     public Dish getDish() {
         return dish;
     }
 
-    public void setDish(Dish dish) {
+    public Order setDish(Dish dish) {
         this.dish = dish;
+        return this;
+    }
+
+    public Dessert getDessert() {
+        return dessert;
+    }
+
+    public Order setDessert(Dessert dessert) {
+        this.dessert = dessert;
+        return this;
     }
 
     @Override
