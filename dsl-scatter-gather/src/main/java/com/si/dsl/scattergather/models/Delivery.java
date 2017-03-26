@@ -8,29 +8,42 @@ public class Delivery {
     private int orderNumber;
     private String drinkName;
     private String dishName;
+    private String desertName;
 
     public int getOrderNumber() {
         return orderNumber;
     }
 
-    public void setOrderNumber(int orderNumber) {
+    public Delivery setOrderNumber(int orderNumber) {
         this.orderNumber = orderNumber;
+        return this;
     }
 
     public String getDrinkName() {
         return drinkName;
     }
 
-    public void setDrinkName(String drinkName) {
+    public Delivery setDrinkName(String drinkName) {
         this.drinkName = drinkName;
+        return this;
     }
 
     public String getDishName() {
         return dishName;
     }
 
-    public void setDishName(String dishName) {
+    public Delivery setDishName(String dishName) {
         this.dishName = dishName;
+        return this;
+    }
+
+    public String getDesertName() {
+        return desertName;
+    }
+
+    public Delivery setDesertName(String desertName) {
+        this.desertName = desertName;
+        return this;
     }
 
     @Override
@@ -45,9 +58,11 @@ public class Delivery {
 
     @Override
     public String toString() {
-        return "---------------------------------------- \n" +
+        return "-------------------------------------- \n" +
                 "Delivery : order number :" + orderNumber + "\n" +
-                "DishName : " + dishName + "  DrinkName :" + drinkName + "\n" +
-                "---------------------------------------- \n";
+                "DishName : " + dishName + "\n" +
+                "DrinkName :" + drinkName + "\n" +
+                "DesertName :" + desertName + "\n" +
+                "------------------------------------- \n";
     }
 }

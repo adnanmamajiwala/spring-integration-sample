@@ -1,38 +1,37 @@
 package com.si.dsl.scattergather;
 
-import com.google.common.util.concurrent.Uninterruptibles;
-import com.si.dsl.scattergather.models.Dish;
-import com.si.dsl.scattergather.models.Drink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.dsl.AggregatorSpec;
+import org.springframework.integration.aggregator.AggregatingMessageHandler;
+import org.springframework.integration.aggregator.MethodInvokingCorrelationStrategy;
+import org.springframework.integration.aggregator.MethodInvokingMessageGroupProcessor;
+import org.springframework.integration.aggregator.MethodInvokingReleaseStrategy;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.RecipientListRouterSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.core.Pollers;
-import org.springframework.integration.dsl.support.Consumer;
-import org.springframework.integration.dsl.support.GenericHandler;
+import org.springframework.integration.router.RecipientListRouter;
+import org.springframework.integration.scattergather.ScatterGatherHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
+import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.stream.CharacterStreamWritingMessageHandler;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHandler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Arrays;
 
 @Configuration
 public class IntegrationFlowConfiguration {
 
-    private final AtomicInteger drinkCounter = new AtomicInteger();
-    private final AtomicInteger dishCounter = new AtomicInteger();
-
-    private OrderAggregator orderAggregator;
+    private final OrderAggregator orderAggregator;
+    private final KitchenService kitchenService;
 
     @Autowired
-    public IntegrationFlowConfiguration(OrderAggregator orderAggregator) {
+    public IntegrationFlowConfiguration(OrderAggregator orderAggregator, KitchenService kitchenService) {
         this.orderAggregator = orderAggregator;
+        this.kitchenService = kitchenService;
     }
 
     @Bean(name = PollerMetadata.DEFAULT_POLLER)
@@ -40,82 +39,93 @@ public class IntegrationFlowConfiguration {
         return Pollers.fixedDelay(1).get();
     }
 
+    private MessageChannel distributionChannel1() {
+        return MessageChannels.executor("drink-flow", executor()).get();
+    }
+
+    private MessageChannel distributionChannel2() {
+        return MessageChannels.executor("dish-flow", executor()).get();
+    }
+
+    private MessageChannel distributionChannel3() {
+        return MessageChannels.executor("dessert-flow", executor()).get();
+    }
+
+    private MessageChannel output() {
+        return MessageChannels.executor("output-flow", executor()).get();
+    }
+
+    private MessageHandler distributor() {
+        RecipientListRouter router = new RecipientListRouter();
+        router.setApplySequence(true);
+        router.setChannels(Arrays.asList(distributionChannel1(), distributionChannel2(), distributionChannel3()));
+        return router;
+    }
+
+    private MessageHandler gatherer() {
+        return new AggregatingMessageHandler(
+                new MethodInvokingMessageGroupProcessor(orderAggregator, "output"),
+                new SimpleMessageStore(),
+                new MethodInvokingCorrelationStrategy(orderAggregator, "correlateBy"),
+                new MethodInvokingReleaseStrategy(orderAggregator, "releaseChecker"));
+    }
+
+    private MessageHandler scatterGatherDistribution() {
+        ScatterGatherHandler handler = new ScatterGatherHandler(distributor(), gatherer());
+        handler.setOutputChannel(output());
+        return handler;
+    }
+
     @Bean
     public IntegrationFlow orders() {
         return IntegrationFlows
                 .from("orders.input")
-                .routeToRecipients(new Consumer<RecipientListRouterSpec>() {
-                    @Override
-                    public void accept(RecipientListRouterSpec recipientListRouterSpec) {
-                        recipientListRouterSpec.recipient("drink-flow").applySequence(true);
-                        recipientListRouterSpec.recipient("dish-flow").applySequence(true);
-                    }
-                })
-                .get();
-    }
-
-    @Bean
-    public IntegrationFlow drinkFlow() {
-        return IntegrationFlows
-                .from(MessageChannels.executor("drink-flow", executor()))
-                .split("payload.drink")
-                .handle(new GenericHandler<Drink>() {
-
-                    @Override
-                    public Object handle(Drink drink, Map<String, Object> map) {
-                        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-                        System.out.println(Thread.currentThread().getName()
-                                + " prepared drink #" + drinkCounter.incrementAndGet()
-                                + " for order #" + drink.getOrderNumber() + ": " + drink.getDrinkName());
-                        return drink;
-                    }
-                })
-                .channel("output-flow")
+                .handle(scatterGatherDistribution())
                 .get();
     }
 
     @Bean
     public IntegrationFlow dishFlow() {
         return IntegrationFlows
-                .from(MessageChannels.executor("dish-flow", executor()))
+                .from(distributionChannel2())
                 .split("payload.dish")
-                .handle(new GenericHandler<Dish>() {
+                .handle(kitchenService, "prepareDish")
+                .get();
+    }
 
-                    @Override
-                    public Object handle(Dish dish, Map<String, Object> map) {
-                        Uninterruptibles.sleepUninterruptibly(3, TimeUnit.SECONDS);
-                        System.out.println(Thread.currentThread().getName()
-                                + " prepared dish #" + dishCounter.incrementAndGet()
-                                + " for order #" + dish.getOrderNumber() + ": " + dish.getDishName());
-                        return dish;
-                    }
-                })
-                .channel("output-flow")
+    @Bean
+    public IntegrationFlow drinkFlow() {
+        return IntegrationFlows
+                .from(distributionChannel1())
+                .split("payload.drink")
+                .handle(kitchenService, "prepareDrink")
+                .get();
+    }
+
+    @Bean
+    public IntegrationFlow dessertFlow() {
+        return IntegrationFlows
+                .from(distributionChannel3())
+                .split("payload.dessert")
+                .handle(kitchenService, "prepareDessert")
                 .get();
     }
 
     @Bean
     public IntegrationFlow resultFlow() {
         return IntegrationFlows
-                .from("output-flow")
-                .aggregate(new Consumer<AggregatorSpec>() {
-                    @Override
-                    public void accept(AggregatorSpec aggregatorSpec) {
-                        aggregatorSpec.processor(orderAggregator, null);
-                    }
-                })
+                .from(output())
                 .handle(CharacterStreamWritingMessageHandler.stdout())
                 .get();
     }
 
-
     @Bean
-    public ThreadPoolTaskExecutor executor(){
+    public ThreadPoolTaskExecutor executor() {
         ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-        pool.setMaxPoolSize(10);
-        pool.setCorePoolSize(10);
+        pool.setCorePoolSize(5);
+        pool.setMaxPoolSize(5);
         pool.setWaitForTasksToCompleteOnShutdown(true);
-        pool.setThreadNamePrefix("Order - ");
+        pool.setThreadNamePrefix("SG - Restaurant - ");
         return pool;
     }
 }
