@@ -12,6 +12,7 @@ import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.stream.CharacterStreamWritingMessageHandler;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
@@ -32,15 +33,35 @@ public class IntegrationFlowConfiguration {
     }
 
     @Bean
+    public MessageChannel drinkChannel() {
+        return MessageChannels.executor("drink-flow", inputExecutor()).get();
+    }
+
+    @Bean
+    public MessageChannel dishChannel() {
+        return MessageChannels.executor("dish-flow", inputExecutor()).get();
+    }
+
+    @Bean
+    public MessageChannel dessertChannel() {
+        return MessageChannels.executor("dessert-flow", inputExecutor()).get();
+    }
+
+    @Bean
+    public MessageChannel outputChannel() {
+        return MessageChannels.executor("output-flow", outputExecutor()).get();
+    }
+
+    @Bean
     public IntegrationFlow orders() {
         return IntegrationFlows
                 .from("orders.input")
                 .routeToRecipients(new Consumer<RecipientListRouterSpec>() {
                     @Override
                     public void accept(RecipientListRouterSpec recipientListRouterSpec) {
-                        recipientListRouterSpec.recipient("drink-flow").applySequence(true);
-                        recipientListRouterSpec.recipient("dish-flow").applySequence(true);
-                        recipientListRouterSpec.recipient("dessert-flow").applySequence(true);
+                        recipientListRouterSpec.recipient("drinkChannel").applySequence(true);
+                        recipientListRouterSpec.recipient("dishChannel").applySequence(true);
+                        recipientListRouterSpec.recipient("dessertChannel").applySequence(true);
                     }
                 })
                 .get();
@@ -49,39 +70,37 @@ public class IntegrationFlowConfiguration {
     @Bean
     public IntegrationFlow drinkFlow() {
         return IntegrationFlows
-                .from(MessageChannels.executor("drink-flow", executor()))
+                .from(drinkChannel())
                 .split("payload.drink")
                 .handle(kitchenService, "prepareDrink")
-                .channel("output-flow")
+                .channel("outputChannel")
                 .get();
     }
 
     @Bean
     public IntegrationFlow dishFlow() {
         return IntegrationFlows
-                .from(MessageChannels.executor("dish-flow", executor()))
+                .from(dishChannel())
                 .split("payload.dish")
                 .handle(kitchenService, "prepareDish")
-                .channel("output-flow")
+                .channel("outputChannel")
                 .get();
     }
-
 
     @Bean
     public IntegrationFlow dessertFlow() {
         return IntegrationFlows
-                .from(MessageChannels.executor("dessert-flow", executor()))
+                .from(dessertChannel())
                 .split("payload.dessert")
                 .handle(kitchenService, "prepareDessert")
-                .channel("output-flow")
+                .channel("outputChannel")
                 .get();
     }
-
 
     @Bean
     public IntegrationFlow resultFlow() {
         return IntegrationFlows
-                .from("output-flow")
+                .from(outputChannel())
                 .aggregate(new Consumer<AggregatorSpec>() {
                     @Override
                     public void accept(AggregatorSpec aggregatorSpec) {
@@ -93,12 +112,22 @@ public class IntegrationFlowConfiguration {
     }
 
     @Bean
-    public ThreadPoolTaskExecutor executor(){
+    public ThreadPoolTaskExecutor outputExecutor(){
         ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-        pool.setMaxPoolSize(5);
-        pool.setCorePoolSize(5);
+        pool.setMaxPoolSize(2);
+        pool.setCorePoolSize(2);
         pool.setWaitForTasksToCompleteOnShutdown(true);
-        pool.setThreadNamePrefix("Restaurant - ");
+        pool.setThreadNamePrefix("Restaurant - output -");
+        return pool;
+    }
+
+    @Bean
+    public ThreadPoolTaskExecutor inputExecutor(){
+        ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
+        pool.setMaxPoolSize(3);
+         pool.setCorePoolSize(3);
+        pool.setWaitForTasksToCompleteOnShutdown(true);
+        pool.setThreadNamePrefix("Restaurant - inout - ");
         return pool;
     }
 }
