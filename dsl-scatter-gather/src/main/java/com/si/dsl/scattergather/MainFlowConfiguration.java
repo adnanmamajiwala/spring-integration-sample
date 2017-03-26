@@ -1,6 +1,6 @@
 package com.si.dsl.scattergather;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.aggregator.AggregatingMessageHandler;
@@ -23,15 +23,21 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.Arrays;
 
 @Configuration
-public class IntegrationFlowConfiguration {
+public class MainFlowConfiguration {
 
     private final OrderAggregator orderAggregator;
-    private final KitchenService kitchenService;
+    private final MessageChannel drinkChannel;
+    private final MessageChannel dishChannel;
+    private final MessageChannel dessertChannel;
 
-    @Autowired
-    public IntegrationFlowConfiguration(OrderAggregator orderAggregator, KitchenService kitchenService) {
+    public MainFlowConfiguration(OrderAggregator orderAggregator,
+                                 @Qualifier("distributionChannelDrinkFlow") MessageChannel drinkChannel,
+                                 @Qualifier("distributionChannelDishFlow") MessageChannel dishChannel,
+                                 @Qualifier("distributionChannelDessertFlow") MessageChannel dessertChannel) {
         this.orderAggregator = orderAggregator;
-        this.kitchenService = kitchenService;
+        this.drinkChannel = drinkChannel;
+        this.dishChannel = dishChannel;
+        this.dessertChannel = dessertChannel;
     }
 
     @Bean(name = PollerMetadata.DEFAULT_POLLER)
@@ -39,26 +45,20 @@ public class IntegrationFlowConfiguration {
         return Pollers.fixedDelay(1).get();
     }
 
-    private MessageChannel distributionChannel1() {
-        return MessageChannels.executor("drink-flow", executor()).get();
+    @Bean
+    public MessageChannel output() {
+        return MessageChannels.executor("output-flow", outputExecutor()).get();
     }
 
-    private MessageChannel distributionChannel2() {
-        return MessageChannels.executor("dish-flow", executor()).get();
-    }
-
-    private MessageChannel distributionChannel3() {
-        return MessageChannels.executor("dessert-flow", executor()).get();
-    }
-
-    private MessageChannel output() {
-        return MessageChannels.executor("output-flow", executor()).get();
+    @Bean(name = "orders.input")
+    public MessageChannel input() {
+        return MessageChannels.executor("input-flow", inputExecutor()).get();
     }
 
     private MessageHandler distributor() {
         RecipientListRouter router = new RecipientListRouter();
         router.setApplySequence(true);
-        router.setChannels(Arrays.asList(distributionChannel1(), distributionChannel2(), distributionChannel3()));
+        router.setChannels(Arrays.asList(dessertChannel, dishChannel, drinkChannel));
         return router;
     }
 
@@ -79,35 +79,8 @@ public class IntegrationFlowConfiguration {
     @Bean
     public IntegrationFlow orders() {
         return IntegrationFlows
-                .from("orders.input")
+                .from(input())
                 .handle(scatterGatherDistribution())
-                .get();
-    }
-
-    @Bean
-    public IntegrationFlow dishFlow() {
-        return IntegrationFlows
-                .from(distributionChannel2())
-                .split("payload.dish")
-                .handle(kitchenService, "prepareDish")
-                .get();
-    }
-
-    @Bean
-    public IntegrationFlow drinkFlow() {
-        return IntegrationFlows
-                .from(distributionChannel1())
-                .split("payload.drink")
-                .handle(kitchenService, "prepareDrink")
-                .get();
-    }
-
-    @Bean
-    public IntegrationFlow dessertFlow() {
-        return IntegrationFlows
-                .from(distributionChannel3())
-                .split("payload.dessert")
-                .handle(kitchenService, "prepareDessert")
                 .get();
     }
 
@@ -120,12 +93,23 @@ public class IntegrationFlowConfiguration {
     }
 
     @Bean
-    public ThreadPoolTaskExecutor executor() {
+    public ThreadPoolTaskExecutor outputExecutor() {
         ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-        pool.setCorePoolSize(5);
-        pool.setMaxPoolSize(5);
+        pool.setCorePoolSize(2);
+        pool.setMaxPoolSize(2);
         pool.setWaitForTasksToCompleteOnShutdown(true);
-        pool.setThreadNamePrefix("SG - Restaurant - ");
+        pool.setThreadNamePrefix("SG - Output - ");
         return pool;
     }
+
+    @Bean
+    public ThreadPoolTaskExecutor inputExecutor() {
+        ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
+        pool.setCorePoolSize(10);
+        pool.setMaxPoolSize(10);
+        pool.setWaitForTasksToCompleteOnShutdown(true);
+        pool.setThreadNamePrefix("SG - Input - ");
+        return pool;
+    }
+
 }

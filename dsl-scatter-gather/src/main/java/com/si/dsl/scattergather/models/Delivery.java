@@ -59,7 +59,8 @@ public class Delivery {
     @Override
     public String toString() {
         return "-------------------------------------- \n" +
-                "Delivery : order number :" + orderNumber + "\n" +
+                "Delivery : " + Thread.currentThread().getName() + "\n" +
+                "Order number :" + orderNumber + "\n" +
                 "DishName : " + dishName + "\n" +
                 "DrinkName :" + drinkName + "\n" +
                 "DesertName :" + desertName + "\n" +

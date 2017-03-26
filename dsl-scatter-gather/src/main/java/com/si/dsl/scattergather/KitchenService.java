@@ -14,9 +14,10 @@ public class KitchenService {
 
     private final AtomicInteger drinkCounter = new AtomicInteger();
     private final AtomicInteger dishCounter = new AtomicInteger();
+    private final AtomicInteger dessertCounter = new AtomicInteger();
 
     public Drink prepareDrink(Drink drink){
-        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+        Uninterruptibles.sleepUninterruptibly(3, TimeUnit.SECONDS);
         System.out.println(Thread.currentThread().getName()
                 + " prepared drink #" + drinkCounter.incrementAndGet()
                 + " for order #" + drink.getOrderNumber() + ": " + drink.getDrinkName());
@@ -24,7 +25,7 @@ public class KitchenService {
     }
 
     public Dish prepareDish(Dish dish){
-        Uninterruptibles.sleepUninterruptibly(3, TimeUnit.SECONDS);
+        Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
         System.out.println(Thread.currentThread().getName()
                 + " prepared dish #" + dishCounter.incrementAndGet()
                 + " for order #" + dish.getOrderNumber() + ": " + dish.getDishName());
@@ -32,9 +33,9 @@ public class KitchenService {
     }
 
     public Dessert prepareDessert(Dessert dessert){
-        Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
+        Uninterruptibles.sleepUninterruptibly(10, TimeUnit.SECONDS);
         System.out.println(Thread.currentThread().getName()
-                + " prepared dessert #" + drinkCounter.incrementAndGet()
+                + " prepared dessert #" + dessertCounter.incrementAndGet()
                 + " for order #" + dessert.getOrderNumber() + ": " + dessert.getDessertName());
         return dessert;
     }
